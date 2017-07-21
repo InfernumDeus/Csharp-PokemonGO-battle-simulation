@@ -1,6 +1,7 @@
 # C# battle simulation
 
-Source code of pretty accurate simulation of Pokemon Go battles intended to be used in conceled commercial project.
+Source code of pretty accurate simulation of Pokemon Go battles. 
+This was intended to be used in conceled commercial project.
 
 Every aspect of battle was cosidered in this simulation so you can rely on it's results. 
 The only problem is accuracy - because it's hard to imitate actions of human player.
@@ -13,4 +14,3 @@ Current approach to random aspects of battle:
 
 Licensing is MIT which basically means you can do whatever you want with it.
 I will appreciate if you mention my authorship of this code in your projects.
-

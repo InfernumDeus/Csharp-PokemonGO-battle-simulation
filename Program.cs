@@ -259,7 +259,7 @@ namespace battle_simulation {
             ////console.WriteLine("------------");
             ////console.WriteLine();
 
-            Console.WriteLine("Dodge charged moves");
+            //Console.WriteLine("Dodge charged moves");
             if (write_battle_log) battle_log += "charge dodge\n" + log_table_header;
 
             dodge_all_charge_moves = true;
@@ -283,7 +283,7 @@ namespace battle_simulation {
             ////console.WriteLine("------------");
             ////console.WriteLine();
 
-            Console.WriteLine("Dodge all moves");
+            //Console.WriteLine("Dodge all moves");
             if (write_battle_log) battle_log += "full dodge\n" + log_table_header;
             dodge_all_quick_moves = true;
             br = battle(attacker, defender);

@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 
-namespace battle_simulation {
-    public static class cp_mult {
-        //индекс / 2 + 1 = уровень
-        //(уровень - 1) * 2 = индекс
+namespace CPmult
+{
+    public static class cp_mult
+    {
         public static List<float> m = new List<float> {
             0.094F,         0.135137432F, //1-1.5
             0.16639787F,    0.192650919F, //2-2.5
@@ -46,5 +47,20 @@ namespace battle_simulation {
             0.78463697F,    0.787473578F, //39 - 39.5            
             0.79030001F                   //40
         };
+
+        public static float ID_to_level(int ID)
+        {
+            return (float)ID / 2 + 1;
+        }
+
+        public static int level_to_ID(float level)
+        {
+            return (int)Math.Round((level - 1) * 2);
+        }
+
+        public static float get_cpm_by_level(float level)
+        {
+            return m[(int)Math.Round((level - 1) * 2)];
+        }
     }
 }

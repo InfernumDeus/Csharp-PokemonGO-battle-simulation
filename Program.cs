@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Data;
 using System.Collections.Generic;
@@ -6,6 +6,8 @@ using System.Collections.Generic;
 //ExcelDataReader
 //https://github.com/ExcelDataReader/ExcelDataReader
 using Excel;
+
+using CPmult;
 
 namespace battle_simulation {
     class QMove
@@ -642,16 +644,16 @@ namespace battle_simulation {
                 if (pokemonTable.Rows[i][0].ToString() == at[0])
                     atkSpecies = i;
 
-            defender.cpm = cp_mult.m[(int)Math.Round(
-                (Convert.ToSingle(df[3], System.Globalization.CultureInfo.InvariantCulture) - 1) * 2)];
+            defender.cpm = 
+                cp_mult.get_cpm_by_level(Convert.ToSingle(df[3], System.Globalization.CultureInfo.InvariantCulture));            
             defender.attack = Convert.ToInt32(pokemonTable.Rows[defSpecies][3]) + Convert.ToInt32(df[4]);
             defender.defense = Convert.ToInt32(pokemonTable.Rows[defSpecies][4]) + Convert.ToInt32(df[5]);
             defender.hp = (int)Math.Floor((Convert.ToInt32(pokemonTable.Rows[defSpecies][5]) + Convert.ToInt32(df[6]))
                           * defender.cpm)
                           * global_hp_rate; //(base_stamina + sIV) * cpm
 
-            attacker.cpm = cp_mult.m[(int)Math.Round(
-                (Convert.ToSingle(at[3], System.Globalization.CultureInfo.InvariantCulture) - 1) * 2)];
+            attacker.cpm =
+                cp_mult.get_cpm_by_level(Convert.ToSingle(at[3], System.Globalization.CultureInfo.InvariantCulture));
             attacker.attack = Convert.ToInt32(pokemonTable.Rows[atkSpecies][3]) + Convert.ToInt32(at[4]);
             attacker.defense = Convert.ToInt32(pokemonTable.Rows[atkSpecies][4]) + Convert.ToInt32(at[5]);
             attacker.hp = (int)Math.Floor((Convert.ToInt32(pokemonTable.Rows[atkSpecies][5]) + Convert.ToInt32(at[6])) 

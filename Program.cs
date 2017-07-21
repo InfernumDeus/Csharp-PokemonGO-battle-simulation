@@ -5,6 +5,7 @@ e-mail: sataha19@mail.ru
 github: https://github.com/InfernumDeus
 
 Feel free to use it in your projects and modify in any way.*/
+
 using System;
 using System.IO;
 using System.Data;

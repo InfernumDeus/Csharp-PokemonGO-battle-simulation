@@ -9,9 +9,9 @@ I will suggest to implement realistically random behavior of player and defender
 
 Current approach to random aspects of battle:
 - If defending pokemon get enough energy to use charge move it will use one quick before this (this is statistically average behavior). All defender's moves have fixed +2 seconds delay to cool down.
-- Player tries to use charge moves as soon as possible and dodge any attack right after yellow flash with 400 milliseconds to react (this constant might be changed).
+- Player tries to use charge moves as soon as possible and dodge any attack right after yellow flash with 400 milliseconds delay to react (this constant might be changed).
 
-"data2.1.xlsx" file contain all gamedata before type effectiveness change that came with gym rework in Summer 2017.
+"data2.1.xlsx" file contains all game data (before type effectiveness change that came with gym rework in Summer 2017).
 
 Licensing is MIT which basically means you can do whatever you want with it.
 I will appreciate if you mention my authorship of this code in your projects.

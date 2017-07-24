@@ -1,4 +1,4 @@
-/* Pokemon GO IV and level calculator
+/* Pokemon GO battle simulation
 created: 21.07.2017
 author: InfernumDeus
 e-mail: sataha19@mail.ru

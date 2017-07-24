@@ -16,5 +16,6 @@ Current approach to random aspects of battle:
 Licensing is MIT which basically means you can do whatever you want with it.
 I will appreciate if you mention my authorship of this code in your projects.
 
-This chart might help you to understand how I handled time for dodges:
+This chart might help you to understand how I defined time for dodges:
+
 ![https://github.com/InfernumDeus/Csharp-PokemonGO-battle-simulation/blob/master/time%20chart.png](https://raw.githubusercontent.com/InfernumDeus/Csharp-PokemonGO-battle-simulation/master/time%20chart.png)

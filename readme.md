@@ -18,7 +18,7 @@ I will appreciate if you mention my authorship of this code in your projects.
 
 # Debugging
 
-Setting `Battle_simulator.write_battle_log = true;` will make this program write in current folder `battle log.csv` with highly detailed log of simulated battle with each of 3 preset dodge tactics.
+Setting `Battle_simulator.write_battle_log = true;` will make this program write in current folder `battle log.csv` with highly detailed log of simulated battles with each of 3 preset dodge tactics.
 
 # PS
 

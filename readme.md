@@ -20,6 +20,16 @@ I will appreciate if you mention my authorship of this code in your projects.
 
 Setting `Battle_simulator.write_battle_log = true;` will make this program write in current folder `battle log.csv` with highly detailed log of simulated battles with each of 3 preset dodge tactics.
 
+# Recursive simulation
+
+I also made alternatime simulation algorithm in different branch. 
+
+The concept is - every time when defender can use charged move simulation split in two timelines (one for used charge, two for not used). 
+Every time battle ends in any timeline the result is added to `Battle_simulator.simulation_results`. With this data you can get realistic win chance and exact average result (use `Battle_simulator.show_average_result()`).
+
+It's pretty heavy and probably statistic algorithm will be more accurate.
+Just want to share this curious idea.
+
 # PS
 
 This chart might help you to understand how I defined time for dodges:

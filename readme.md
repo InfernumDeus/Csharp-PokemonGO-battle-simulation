@@ -1,6 +1,6 @@
 # C# battle simulation
 
-Source code of pretty accurate simulation of Pokemon Go battles. 
+This is the source code of pretty accurate simulation of Pokemon Go battles. 
 This was intended to be used in canceled commercial project.
 
 Every aspect of battle was considered in this simulation so you can rely on it's results. 

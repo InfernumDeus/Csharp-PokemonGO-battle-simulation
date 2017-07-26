@@ -24,7 +24,7 @@ Setting `Battle_simulator.write_battle_log = true;` will make this program write
 
 I also made alternatime simulation algorithm in different branch. 
 
-The concept is - every time when defender can use charged move simulation split in two timelines (one for use charge, two for not used). 
+The concept is - every time when defender can use charged move simulation split in two timelines (one for used charge, two for not used). 
 Every time battle ends in any timeline the result is added to `Battle_simulator.simulation_results`. With this data you can get realistic win chance and exact average result (use `Battle_simulator.show_average_result()`).
 
 It's pretty heavy and probably statistic algorithm will be more accurate.

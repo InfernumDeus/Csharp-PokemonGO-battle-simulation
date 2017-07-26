@@ -79,7 +79,7 @@ namespace battle_simulation {
                  + "Time = " + full_dodge_time + "\r\n\r\n";
         }
     }
-
+    
     class Battle_simulator
     {
         //STIMULATION OPTIONS//
@@ -110,7 +110,137 @@ namespace battle_simulation {
 
         private static List<QMove> qMovesList = new List<QMove>();
         private static List<CMove> cMovesList = new List<CMove>();
-        
+
+        //for recursive mode
+        class Battle_State
+        {
+            public float time;
+            public float attacker_wait, defender_wait, time_til_dmg;
+
+            public float start_dodge_q, end_dodge_q, fls_dodge_q_end;
+            public float start_dodge_c, end_dodge_c, fls_dodge_c_end;
+
+            public int def_hp, def_en, def_incoming_damage;
+            public bool next_attack_is_charged;
+
+            public int atk_hp, atk_en, atk_incoming_damage;
+            public bool dodged;
+
+            public bool f_move_done;
+            public bool s_move_done;
+            public bool t_move_done;
+
+            public Battle_State(Attacker attacker, Defender defender)
+            {
+                time = timer;
+                attacker_wait = attacker.waiting;
+                defender_wait = defender.waiting;
+                time_til_dmg = attacker.time_til_damage;
+
+                start_dodge_q = defender.start_dodge_q;
+                start_dodge_c = defender.start_dodge_c;
+                end_dodge_q = defender.end_dodge_q;
+                end_dodge_c = defender.end_dodge_c;
+
+                def_hp = defender.current_hp;
+                def_en = defender.current_en;
+                def_incoming_damage = defender.incoming_damage;
+                next_attack_is_charged = defender.next_attack_is_charged;
+
+                atk_hp = attacker.current_hp;
+                atk_en = attacker.current_en;
+                atk_incoming_damage = attacker.incoming_damage;
+                dodged = attacker.dodged;
+
+                f_move_done = defender.first_move_done;
+                s_move_done = defender.second_move_done;
+                t_move_done = defender.third_move_done;
+            }
+
+            public void Restore_State(Attacker attacker, Defender defender)
+            {
+                timer = time;
+                attacker.waiting = attacker_wait;
+                defender.waiting = defender_wait;
+                attacker.time_til_damage = time_til_dmg;
+
+                defender.start_dodge_q = start_dodge_q;
+                defender.start_dodge_c = start_dodge_c;
+                defender.end_dodge_q = end_dodge_q;
+                defender.end_dodge_c = end_dodge_c;
+
+                defender.current_hp = def_hp;
+                defender.current_en = def_en;
+                defender.incoming_damage = def_incoming_damage;
+                defender.next_attack_is_charged = next_attack_is_charged;
+
+                attacker.current_hp = atk_hp;
+                attacker.current_en = atk_en;
+                attacker.incoming_damage = atk_incoming_damage;
+                attacker.dodged = dodged;
+
+                defender.first_move_done = f_move_done;
+                defender.second_move_done = s_move_done;
+                defender.third_move_done = t_move_done;
+            }
+        }
+
+        //for recursive mode
+        public class Simulation_Result /*: IComparable*/
+        {
+            public string attacking_pokemon, qMove, cMove, style;
+            public int hp;
+            public float time;
+
+            public Simulation_Result(Attacker attacker, Defender defender,
+                                     string Style, int HP, float Time)
+            {
+                attacking_pokemon = attacker.pokemonName;
+                qMove = attacker.q_move;
+                cMove = attacker.c_move;
+                style = Style;
+                hp = HP;
+                time = Time;
+            }
+        }
+
+        //for recursive mode
+        public static string[] Simulation_Result_to_strings(List<Simulation_Result> input)
+        {
+            string[] output = new string[6];
+            if (input.Count == 0) return null;
+
+            output[0] = input[0].attacking_pokemon;
+            output[1] = input[0].qMove;
+            output[2] = input[0].cMove;
+            output[3] = input[0].style;
+            output[4] = input[0].hp.ToString();
+            output[5] = input[0].time.ToString();
+            if (input.Count == 1) return output;
+
+            for (int i = 1; i < input.Count; i++)
+            {
+                output[0] += "\n" + input[i].attacking_pokemon;
+                output[1] += "\n" + input[i].qMove;
+                output[2] += "\n" + input[i].cMove;
+                output[3] += "\n" + input[i].style;
+                output[4] += "\n" + input[i].hp.ToString();
+                output[5] += "\n" + input[i].time.ToString();
+            }
+            return output;
+        }
+
+        //for recursive mode
+        private static List<Simulation_Result> best_counters_hp_N = new List<Simulation_Result>();
+        private static List<Simulation_Result> best_counters_t_N = new List<Simulation_Result>();
+        private static List<Simulation_Result> best_counters_hp = new List<Simulation_Result>();
+        private static List<Simulation_Result> best_counters_t = new List<Simulation_Result>();
+        private static List<Simulation_Result> best_counters_hp_P = new List<Simulation_Result>();
+        private static List<Simulation_Result> best_counters_t_P = new List<Simulation_Result>();
+
+        private static List<Tuple<bool, float, int, int>> simulation_results;
+        ////////////////////
+
         private static string battle_log = "";        
         private static void write_log_line(Attacker attacker, Defender defender)
         {
@@ -194,115 +324,123 @@ namespace battle_simulation {
             set_battle_options("Snorlax/Lick/Hyper Beam/27.5/13/15/14",
                                "Rhydon/Rock Smash/Stone Edge/24/14/14/7");
 
-            Simulate_battles();
-
-            filePath = Directory.GetCurrentDirectory() + "\\battle log.csv";
-
-            File.WriteAllText(filePath, battle_log);
-            return;
+            Simulate_battles(attacker, defender);
         }
 
-        private static Battle_Result Simulate_battles()
+        private static void Simulate_battles(Attacker attacker, Defender defender)
         {
-            if (write_battle_log) Battle_logger.SetFileHeader(attacker, defender);
-                       
+            defender.timeBackup = new float[4];
+            defender.timeBackup[0] = defender.start_dodge_q;
+            defender.timeBackup[1] = defender.end_dodge_q;
+            defender.timeBackup[2] = defender.start_dodge_c;
+            defender.timeBackup[3] = defender.end_dodge_c;
 
-            Battle_Result battle_result = new Battle_Result();
-            Tuple<bool, float, int, int> br;
-
-            //Console.WriteLine("Don't dodge");
-            if (write_battle_log) Battle_logger.AddTableHeader("no dodge");
-
+            //if (write_battle_log) Battle_logger.SetFileHeader(attacker, defender);
+            
+            //if (write_battle_log) Battle_logger.AddTableHeader("no dodge");
+            Console.WriteLine("Don't dodge");
+            attacker.reset();
+            defender.reset();
+            
             dodge_all_quick_moves = false;
             dodge_all_charge_moves = false;
-            br = battle();
-            battle_result.no_dodge_result = br.Item1;
-            battle_result.no_dodge_time = br.Item2;
-            battle_result.no_dodge_hp = br.Item3;
-            battle_result.no_dodge_enemy_hp = br.Item4;
+            battle();
             
-            if (write_battle_log) Battle_logger.AddTableSummary(br.Item1, br.Item2, br.Item3, br.Item4);
+            simulation_results = new List<Tuple<bool, float, int, int>>();
+            battle();
+            show_average_result();
 
-            ////console.WriteLine("------------");
-            ////console.WriteLine();
+            //if (write_battle_log) Battle_logger.AddTableSummary(br.Item1, br.Item2, br.Item3, br.Item4);
 
-            //Console.WriteLine("Dodge charged moves");
-            if (write_battle_log) Battle_logger.AddTableHeader("charge dodge");
+            Console.WriteLine("------------");
+            Console.WriteLine();
 
+            //if (write_battle_log) Battle_logger.AddTableHeader("charge dodge");
+            Console.WriteLine("Dodge charged moves");
             dodge_all_charge_moves = true;
-            br = battle();
-            battle_result.ch_dodge_result = br.Item1;
-            battle_result.ch_dodge_time = br.Item2;
-            battle_result.ch_dodge_hp = br.Item3;
-            battle_result.ch_dodge_enemy_hp = br.Item4;
+            attacker.reset();
+            defender.reset();
+            simulation_results = new List<Tuple<bool, float, int, int>>();
+            battle();
+            show_average_result();
 
-            if (write_battle_log) Battle_logger.AddTableSummary(br.Item1, br.Item2, br.Item3, br.Item4);
+            //if (write_battle_log) Battle_logger.AddTableSummary(br.Item1, br.Item2, br.Item3, br.Item4);
 
-            ////console.WriteLine("------------");
-            ////console.WriteLine();
+            Console.WriteLine("------------");
+            Console.WriteLine();
 
-            //Console.WriteLine("Dodge all moves");
-            if (write_battle_log) Battle_logger.AddTableHeader("full dodge");
+            //if (write_battle_log) Battle_logger.AddTableHeader("full dodge");
+            Console.WriteLine("Dodge all moves");
             dodge_all_quick_moves = true;
-            br = battle();
-            battle_result.full_dodge_result = br.Item1;
-            battle_result.full_dodge_time = br.Item2;
-            battle_result.full_dodge_hp = br.Item3;
-            battle_result.full_dodge_enemy_hp = br.Item4;
+            attacker.reset();
+            defender.reset();
+            simulation_results = new List<Tuple<bool, float, int, int>>();
+            battle();
+            show_average_result();
 
-            if (write_battle_log) Battle_logger.AddTableSummary(br.Item1, br.Item2, br.Item3, br.Item4);
+            //if (write_battle_log) Battle_logger.AddTableSummary(br.Item1, br.Item2, br.Item3, br.Item4);
 
-            battle_result.use_charges = attacker.use_charges;
-            return battle_result;
+            //return battle_result;
         }
-
-        //output: win/time/attacker's hp LOST/defender's hp LEFT
-        private static Tuple<bool, float, int, int> battle()
+        
+        //private static Tuple<bool, float, int, int> battle(Attacker attacker, Defender defender)
+        private static void battle()
         {
             try
             {
-                attacker.reset();
-                defender.reset();
-                timer = 0.6F; //the moment attacker do first move
+                if (!defender.first_move_done)
+                {
+                    timer = 0.6F;            //first attack of player starts at 0.6 seconds 
+                    defender.waiting = 0.9F; //first attack of defender starts at 1.5 seconds 
 
-                float[] bufAr = new float[4];
-                bufAr[0] = defender.start_dodge_q;
-                bufAr[1] = defender.end_dodge_q;
-                bufAr[2] = defender.start_dodge_c;
-                bufAr[3] = defender.end_dodge_c;
+                    defender.incoming_damage = attacker.q_damage;
+                    attacker.waiting = attacker.q_cd;
+                    defender.first_move_done = true;
+                    defender.attacked = false;
+                    while (!defender.attacked)
+                        hit();
+                }
 
-                //first attack comes in 1.5s
-                defender.incoming_damage = attacker.q_damage;
-                attacker.waiting = attacker.q_cd;
-                defender.attacked = false;
-                while (!defender.attacked)
-                    hit();
+                if (!defender.second_move_done)
+                {
+                    //second attack of defender comes after 1 second
+                    defender.start_dodge_q = 1 - user_reaction_constant;
+                    defender.end_dodge_q = 0.3F; //1 - 0.7
 
-                //second is after 1s
-                defender.start_dodge_q = 0.6F; //-0.4F
-                defender.end_dodge_c = 0.3F; //-0.7F
+                    defender.start_dodge_c = 1 - user_reaction_constant;
+                    defender.end_dodge_c = 0.3F; //1 - 0.7
 
-                defender.waiting = 1;
-                attacker.time_til_damage = 1;
-                defender.attacked = false;
-                while (!defender.attacked)
-                    hit();
+                    defender.waiting = 1;
+                    attacker.time_til_damage = 1;
+                    defender.second_move_done = true;
+                    defender.attacked = false;
+                    while (!defender.attacked)
+                        hit();
+                }
 
-                //third is after 2.5s
-                defender.start_dodge_q = 2.1F; //-0.4F
-                defender.end_dodge_q = 1.8F; //-0.7F
+                if (!defender.third_move_done)
+                {
+                    //third attack of defender comes after 2.5 second
+                    defender.start_dodge_q = 2.5F - user_reaction_constant;
+                    defender.end_dodge_q = 1.8F; //2.5 - 0.7
 
-                defender.waiting = 2.5F;
-                defender.attacked = false;
-                if (attacker.time_til_damage > 2.5F)
-                    attacker.time_til_damage = 2.5F;
-                while (!defender.attacked)
-                    hit();
-                
-                defender.start_dodge_q = bufAr[0];
-                defender.end_dodge_q = bufAr[1];
-                defender.start_dodge_c = bufAr[2];
-                defender.end_dodge_c = bufAr[3];
+                    defender.start_dodge_c = 2.5F - user_reaction_constant;
+                    defender.end_dodge_c = 1.8F; //2.5 - 0.7
+
+                    defender.waiting = 2.5F;
+                    defender.third_move_done = true;
+                    defender.attacked = false;
+                    if (attacker.time_til_damage > 2.5F)
+                        attacker.time_til_damage = 2.5F;
+                    while (!defender.attacked)
+                        hit();
+                }
+
+                //set normal dodge conditions
+                defender.start_dodge_q = defender.timeBackup[0];
+                defender.end_dodge_q = defender.timeBackup[1];
+                defender.start_dodge_c = defender.timeBackup[2];
+                defender.end_dodge_c = defender.timeBackup[3];
 
                 //rest of the battle
                 while (true)
@@ -312,23 +450,33 @@ namespace battle_simulation {
             }
             catch (Exception ex)
             {
+                if (attacker.current_hp < 0) attacker.current_hp = 0;
+                if (defender.current_hp < 0) defender.current_hp = 0;
+
                 if (ex.Message == "1")
                 {
-                    return Tuple.Create<bool, float, int, int>(
+                    simulation_results.Add(Tuple.Create<bool, float, int, int>(
                         true,
                         timer / (float)global_hp_rate,
-                        (int)(((float)attacker.hp - (float)attacker.current_hp) / (float)global_hp_rate), 
-                        (int)((float)defender.current_hp / (float)global_hp_rate));
+                        (int)(((float)attacker.hp - (float)attacker.current_hp) / (float)global_hp_rate),
+                        (int)((float)defender.current_hp / (float)global_hp_rate)));
+                    return;
                 }
                 else if (ex.Message == "2")
                 {
-                    return Tuple.Create<bool, float, int, int>(
+                    simulation_results.Add(Tuple.Create<bool, float, int, int>(
                         false,
                         timer / (float)global_hp_rate,
                         (int)(((float)attacker.hp - (float)attacker.current_hp) / (float)global_hp_rate),
-                        (int)((float)defender.current_hp / (float)global_hp_rate));
+                        (int)((float)defender.current_hp / (float)global_hp_rate)));
+                    return;
                 }
-                else throw ex;
+                else
+                {
+                    Console.WriteLine(ex.Message);
+                    Console.ReadKey();
+                    throw ex;
+                }
             }
         }
 
@@ -354,8 +502,8 @@ namespace battle_simulation {
                     attacker.incoming_damage > 0)
                 {
                     //console.WriteLine("Dodge");
-                    if (write_battle_log)
-                        Battle_logger.LogAttackerAction("Dodge", attacker, defender, timer);
+                    //if (write_battle_log)
+                    //    Battle_logger.LogAttackerAction("Dodge", attacker, defender, timer);
 
                     attacker.dodged = true;
                     defender.incoming_damage = 0;
@@ -372,8 +520,8 @@ namespace battle_simulation {
                     attacker.incoming_damage > 0)
                 {
                     //console.WriteLine("Dodge");
-                    if (write_battle_log)
-                        Battle_logger.LogAttackerAction("Dodge", attacker, defender, timer);
+                    //if (write_battle_log)
+                    //    Battle_logger.LogAttackerAction("Dodge", attacker, defender, timer);
 
                     attacker.dodged = true;
                     defender.incoming_damage = 0;
@@ -386,8 +534,8 @@ namespace battle_simulation {
                     defender.current_hp > defender.overkill_hp_point)
                 { //c move
                     //console.WriteLine("Attacker use charge move");
-                    if (write_battle_log)
-                        Battle_logger.LogAttackerAction("Charge move", attacker, defender, timer);
+                    //if (write_battle_log)
+                    //    Battle_logger.LogAttackerAction("Charge move", attacker, defender, timer);
 
                     defender.incoming_damage = attacker.c_damage;
                     attacker.waiting = attacker.c_cd;
@@ -396,8 +544,8 @@ namespace battle_simulation {
                 else
                 { //q move
                     //console.WriteLine("Attacker use quick move");
-                    if (write_battle_log)
-                        Battle_logger.LogAttackerAction("Quick move", attacker, defender, timer);
+                    //if (write_battle_log)
+                    //    Battle_logger.LogAttackerAction("Quick move", attacker, defender, timer);
 
                     defender.incoming_damage = attacker.q_damage;
                     attacker.waiting = attacker.q_cd;
@@ -415,22 +563,29 @@ namespace battle_simulation {
                     delayed_charge)
                 { //c move
                     //console.WriteLine("Defender use charge move");
-                    if (write_battle_log)
-                        Battle_logger.LogDefenderAction("Charge move !", attacker, defender, timer);
+                    Battle_State battle_State = new Battle_State(attacker, defender);
 
-                    delayed_charge = false;
+                    //if (write_battle_log)
+                    //    Battle_logger.LogDefenderAction("Charge move !", attacker, defender, timer);
 
                     attacker.incoming_damage = defender.c_damage;
                     attacker.time_til_damage = defender.c_cd - defender.end_dodge_c;
                     defender.waiting = defender.c_cd;
                     defender.current_en -= defender.enrg_cost;
                     defender.next_attack_is_charged = true;
+
+                    defender.attacked = true;
+
+                    //start alternative timeline after charged attack
+                    battle(); 
+                    //continue this timeline without charged attack
+                    battle_State.Restore_State(attacker, defender); 
                 }
                 else
                 { //q move
                     //console.WriteLine("Defender use quick move");
-                    if (write_battle_log)
-                        Battle_logger.LogDefenderAction("Quick move", attacker, defender, timer);
+                    //if (write_battle_log)
+                    //    Battle_logger.LogDefenderAction("Quick move", attacker, defender, timer);
                     
                     if (defender.enrg_cost <= defender.current_en)
                         delayed_charge = true; //1 move delay for charged attacks
@@ -452,8 +607,8 @@ namespace battle_simulation {
                 attacker.waiting -= attacker.time_til_damage;
                 defender.waiting -= attacker.time_til_damage;
 
-                if (write_battle_log && attacker.incoming_damage != 0)
-                    Battle_logger.LogIncomingDamage(attacker, defender, timer);
+                //if (write_battle_log && attacker.incoming_damage != 0)
+                //    Battle_logger.LogIncomingDamage(attacker, defender, timer);
 
                 if (attacker.take_damage())
                     throw new Exception("2"); //defender wins
@@ -607,6 +762,53 @@ namespace battle_simulation {
             //and it's better to use quick move then charged
             defender.overkill_hp_point = 
                 attacker.q_damage * (int)Math.Floor(attacker.c_cd / attacker.q_cd);
+        }
+
+        //for recursive mode
+        static void show_average_result()
+        {
+            float chance = 0;
+            float time = 0;
+            int ahp = 0;
+            int dhp = 0;
+            foreach (Tuple<bool, float, int, int> t in simulation_results)
+            {
+                if (t.Item1) chance += 1;
+                time += t.Item2;
+                ahp += t.Item3;
+                dhp += t.Item4;
+            }
+
+            Console.WriteLine("Chance to win = " + (chance / (float)simulation_results.Count));
+            Console.WriteLine("Time = " + (time / (float)simulation_results.Count));
+            Console.WriteLine("Attacker hp = " + ((float)ahp / (float)simulation_results.Count));
+            Console.WriteLine("Defender hp = " + ((float)dhp / (float)simulation_results.Count));
+
+            Console.WriteLine();
+        }
+
+        //for recursive mode
+        static Tuple<float, int, int> get_average_result()
+        {
+            float time = 0;
+            int ahp = 0;
+            int dhp = 0;
+            foreach (Tuple<bool, float, int, int> t in simulation_results)
+            {
+                time += t.Item2;
+                ahp += t.Item3;
+                dhp += t.Item4;
+            }
+
+            return Tuple.Create<float, int, int>(
+                time / (float)simulation_results.Count,
+                (int)Math.Round((Convert.ToSingle(
+                    (float)ahp / (float)simulation_results.Count,
+                    System.Globalization.CultureInfo.InvariantCulture))),
+                (int)Math.Round((Convert.ToSingle(
+                    (float)dhp / (float)simulation_results.Count,
+                    System.Globalization.CultureInfo.InvariantCulture)))
+            );
         }
     }
 }

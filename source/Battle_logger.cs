@@ -4,7 +4,7 @@ namespace battle_simulation
 {
     public static class Battle_logger
     {
-        private static string battle_log;
+        public static string battle_log { get; private set; }
 
         private const string 
             log_table_header = "time;atk;def;aw;dw;ttagd;ahp;dhp;aen;den;"

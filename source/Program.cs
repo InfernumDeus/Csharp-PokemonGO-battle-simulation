@@ -187,7 +187,7 @@ namespace battle_simulation {
 
             filePath = Directory.GetCurrentDirectory() + "\\battle log.csv";
 
-            File.WriteAllText(filePath, battle_log);
+            File.WriteAllText(filePath, Battle_logger.battle_log);
             return;
         }
 

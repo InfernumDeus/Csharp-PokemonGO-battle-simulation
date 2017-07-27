@@ -241,27 +241,6 @@ namespace battle_simulation {
         private static List<Tuple<bool, float, int, int>> simulation_results;
         ////////////////////
 
-        private static string battle_log = "";        
-        private static void write_log_line(Attacker attacker, Defender defender)
-        {
-            battle_log += Math.Round(attacker.waiting, 2, MidpointRounding.AwayFromZero) + ";"
-                        + Math.Round(defender.waiting, 2, MidpointRounding.AwayFromZero) + ";"
-                        + Math.Round(attacker.time_til_damage, 2, MidpointRounding.AwayFromZero) + ";"
-                        + attacker.current_hp + ";" + defender.current_hp + ";" + attacker.current_en + ";" + defender.current_en + ";"
-                        + attacker.incoming_damage.ToString() + ";" + attacker.dodged.ToString() + ";"
-                        + defender.incoming_damage.ToString() + ";" + defender.next_attack_is_charged.ToString() + "\n";
-        }
-
-        private static int NumToDamageRatio (string cellValue) {
-            switch (cellValue) {
-                case "0" : return 6400;
-                case "1" : return 8000;
-                case "3" : return 12500;
-                case "4" : return 15625;
-                default  : return 10000;
-            }
-        }
-
         //number of rows in data tables
         static int typeLimit = 61;
         static int pokemonLimit = 238;

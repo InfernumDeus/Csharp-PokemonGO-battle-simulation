@@ -111,17 +111,6 @@ namespace battle_simulation {
         private static List<QMove> qMovesList = new List<QMove>();
         private static List<CMove> cMovesList = new List<CMove>();
         
-        private static string battle_log = "";        
-        private static void write_log_line(Attacker attacker, Defender defender)
-        {
-            battle_log += Math.Round(attacker.waiting, 2, MidpointRounding.AwayFromZero) + ";"
-                        + Math.Round(defender.waiting, 2, MidpointRounding.AwayFromZero) + ";"
-                        + Math.Round(attacker.time_til_damage, 2, MidpointRounding.AwayFromZero) + ";"
-                        + attacker.current_hp + ";" + defender.current_hp + ";" + attacker.current_en + ";" + defender.current_en + ";"
-                        + attacker.incoming_damage.ToString() + ";" + attacker.dodged.ToString() + ";"
-                        + defender.incoming_damage.ToString() + ";" + defender.next_attack_is_charged.ToString() + "\n";
-        }
-
         private static int NumToDamageRatio (string cellValue) {
             switch (cellValue) {
                 case "0" : return 6400;

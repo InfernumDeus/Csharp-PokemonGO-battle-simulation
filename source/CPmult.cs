@@ -5,9 +5,10 @@ namespace CPmult
 {
     public static class cp_mult
     {
-        public static List<float> m = new List<float> {
-            0.094F,         0.135137432F, //1-1.5
-            0.16639787F,    0.192650919F, //2-2.5
+        public static readonly List<float> m = new List<float> 
+        {
+            0.094F,         0.135137432F, //1-1.5 level
+            0.16639787F,    0.192650919F, //2-2.5 level
             0.21573247F,    0.236572661F,
             0.25572005F,    0.273530381F,
             0.29024988F,    0.306057377F,
@@ -44,8 +45,8 @@ namespace CPmult
             0.76739717F,    0.770297266F,
             0.7731865F,     0.776064962F,
             0.77893275F,    0.781790055F,
-            0.78463697F,    0.787473578F, //39 - 39.5            
-            0.79030001F                   //40
+            0.78463697F,    0.787473578F, //39 - 39.5 level           
+            0.79030001F                   //40 level
         };
 
         public static float ID_to_level(int ID)
